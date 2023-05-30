@@ -1,10 +1,11 @@
+mod aprs;
 mod config;
 mod error;
 mod extension_server;
 mod flags;
 mod utils;
-use std::time::Duration;
 
+pub use config::Config;
 pub use error::{Err, Result};
 #[tokio::main]
 async fn main() {
@@ -23,11 +24,9 @@ async fn main() {
         eprintln!("{:#?}", config);
     }
     let _ext_con_store = if config.extension_server.enabled {
-        extension_server::start(config)
+        extension_server::start(config.clone())
     } else {
         Default::default()
     };
-    loop {
-        tokio::time::sleep(Duration::from_secs(100)).await;
-    }
+    aprs::start_server(config).await;
 }
