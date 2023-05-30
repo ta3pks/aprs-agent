@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::flags::flags;
+use crate::flags::{flags, Flags};
 use educe::Educe;
 
 #[derive(Debug, Serialize, Deserialize, Educe, Clone)]
@@ -36,8 +36,8 @@ pub struct ExtensionServerSettings {
 
 static mut CONFIG: Option<Config> = None;
 
-pub fn parse() -> Config {
-    let cpath = &flags().config;
+pub fn parse(flags: &Flags) -> Config {
+    let cpath = &flags.config;
     let contents = std::fs::read_to_string(cpath).expect("failed to read config file");
     let config: Config = toml::from_str(&contents).expect("failed to parse config file");
     unsafe {

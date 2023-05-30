@@ -1,4 +1,6 @@
-use std::{collections::HashMap, fmt::Display, net::SocketAddr, str::FromStr, sync::Arc};
+use std::{
+    collections::HashMap, fmt::Display, net::SocketAddr, str::FromStr, sync::Arc, time::Duration,
+};
 
 use parking_lot::RwLock;
 use tokio::{
@@ -10,7 +12,7 @@ use tokio::{
 use crate::{config::Config, utils::now_unix};
 
 #[derive(Debug, Default, Clone)]
-struct ConStore {
+pub struct ConStore {
     store: Arc<RwLock<HashMap<String, UnboundedSender<String>>>>,
 }
 impl ConStore {
@@ -29,15 +31,19 @@ impl ConStore {
     }
 }
 
-pub async fn start(cfg: Config) {
+pub fn start(cfg: Config) -> ConStore {
     let (host, port) = (cfg.extension_server.host, cfg.extension_server.port);
     let store = ConStore::default();
     eprintln!("Starting extension server on {host}:{port}");
-    let listener = tokio::net::TcpListener::bind((host, port)).await.unwrap();
-    loop {
-        let (socket, addr) = listener.accept().await.unwrap();
-        tokio::spawn(handler(socket, addr, store.clone()));
-    }
+    let _store = store.clone();
+    tokio::spawn(async move {
+        let listener = tokio::net::TcpListener::bind((host, port)).await.unwrap();
+        loop {
+            let (socket, addr) = listener.accept().await.unwrap();
+            tokio::spawn(handler(socket, addr, _store.clone()));
+        }
+    });
+    store
 }
 
 macro_rules! get_cmd {
@@ -89,9 +95,14 @@ async fn handler(mut sock: TcpStream, addr: SocketAddr, store: ConStore) {
                 } else {
                     break;
                 }
+            },
+            _ = tokio::time::sleep(Duration::from_secs(10)) =>{
+                eprintln!("extension_server client {addr} timed out");
+                break;
             }
         }
     }
+    store.remove(addr);
     eprintln!("{addr} disconnected");
 }
 
