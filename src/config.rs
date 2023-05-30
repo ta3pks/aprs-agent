@@ -45,9 +45,6 @@ pub fn parse(flags: &Flags) -> Config {
     }
     config
 }
-pub fn config() -> &'static Config {
-    unsafe { CONFIG.as_ref().expect("config is not initially parsed") }
-}
 pub fn write_default_config() {
     let cpath = &flags().config;
     let config = Config::default();
