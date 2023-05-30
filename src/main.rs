@@ -23,10 +23,10 @@ async fn main() {
     if config.print_config_on_startup {
         eprintln!("{:#?}", config);
     }
-    let _ext_con_store = if config.extension_server.enabled {
+    let ext_con_store = if config.extension_server.enabled {
         extension_server::start(config.clone())
     } else {
         Default::default()
     };
-    aprs::start_server(config).await;
+    aprs::start_server(config, ext_con_store).await;
 }

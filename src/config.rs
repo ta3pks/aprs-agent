@@ -13,8 +13,6 @@ pub struct Config {
     pub port: u16,
     #[educe(Default = "N0CALL")]
     pub callsign: String,
-    #[educe(Default = "00000")]
-    pub passcode: String,
     #[educe(Default(
         expression = r#"vec!["ta*","tb*","ym*"].iter().map(ToString::to_string).collect()"#
     ))]
