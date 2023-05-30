@@ -40,9 +40,6 @@ pub fn parse() -> Config {
     let cpath = &flags().config;
     let contents = std::fs::read_to_string(cpath).expect("failed to read config file");
     let config: Config = toml::from_str(&contents).expect("failed to parse config file");
-    if config.print_config_on_startup {
-        println!("{config:#?}");
-    }
     unsafe {
         CONFIG = Some(config.clone());
     }

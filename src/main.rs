@@ -12,6 +12,13 @@ async fn main() {
         eprintln!("default config written to {}", flags.config);
         return;
     }
-    config::parse();
+    let config = config::parse();
+    if flags.print_config {
+        eprintln!("{:#?}", config);
+        return;
+    }
+    if config.print_config_on_startup {
+        eprintln!("{:#?}", config);
+    }
     println!("Hello, world!");
 }
