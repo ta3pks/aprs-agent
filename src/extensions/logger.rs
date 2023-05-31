@@ -26,10 +26,38 @@ impl super::Extension for Logger {
         true
     }
     async fn handle(&self, line: &str) -> Option<String> {
-        let _cfg = &crate::Config::get().extensions.logger;
-        if line.starts_with('#') && _cfg.log_comments {
+        let cfg = &crate::Config::get().extensions.logger;
+        if line.starts_with('#') && cfg.log_comments {
             self.log(line);
         }
+        let msg = match aprs_parser::AprsPacket::decode_textual(line.as_bytes()) {
+            Ok(msg) => msg,
+            Err(e) => {
+                self.error(&format!("failed to parse aprs packet: {e}\n{line}"));
+                return None;
+            }
+        };
+        if cfg.filter_by_message_type.is_empty()
+            || cfg
+                .filter_by_message_type
+                .contains(&(msg.data.data_type_identifier() as char))
+        {
+            if cfg
+                .exclude_by_message_type
+                .contains(&(msg.data.data_type_identifier() as char))
+            {
+                if !cfg.filter_by_message_type.is_empty() {
+                    self.warn(
+                        &format!(
+                            "both exclude filter and filter_by_message_type config parameters contain the same char '{}'",
+                            msg.data.data_type_identifier() as char)
+                    )
+                }
+                return None;
+            }
+            self.log(line);
+        }
+
         None
     }
 }
