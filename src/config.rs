@@ -22,7 +22,7 @@ pub struct Config {
     #[educe(Default = "N0CALL")]
     pub callsign: String,
     #[educe(Default(
-        expression = r#"vec!["ta*","tb*","ym*"].iter().map(ToString::to_string).collect()"#
+        expression = r#"vec!["ta*","tb*","tc*","ym*"].iter().map(ToString::to_string).collect()"#
     ))]
     pub allowed_callsigns: Vec<String>,
     #[educe(Default = true)]
