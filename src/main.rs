@@ -2,6 +2,7 @@ mod aprs;
 mod config;
 mod error;
 mod extension_server;
+mod extensions;
 mod flags;
 mod utils;
 
@@ -15,7 +16,7 @@ async fn main() {
         eprintln!("default config written to {}", flags.config);
         return;
     }
-    let config = config::parse(&flags);
+    let config = Config::parse(&flags);
     if flags.print_config {
         eprintln!("{:#?}", config);
         return;

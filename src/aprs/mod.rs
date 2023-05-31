@@ -6,7 +6,7 @@ use tokio::{
     time::sleep,
 };
 
-use crate::extension_server::ConStore;
+use crate::{extension_server::ConStore, extensions};
 
 pub async fn start_server(config: crate::Config, tcp_ext_store: ConStore) {
     loop {
@@ -25,7 +25,7 @@ pub async fn start_server(config: crate::Config, tcp_ext_store: ConStore) {
         )
         .await
         .expect("failed to write to aprs server");
-        let (r, _w) = con.split();
+        let (r, mut w) = con.split();
         let reader = tokio::io::BufReader::new(r);
         let mut lines = reader.lines();
         while let Ok(line) = lines.next_line().await {
@@ -39,14 +39,7 @@ pub async fn start_server(config: crate::Config, tcp_ext_store: ConStore) {
                 eprintln!("{}", line);
                 continue;
             }
-            let msg = aprs_parser::AprsPacket::decode_textual(line.as_bytes());
-            let msg = if let Ok(msg) = msg {
-                msg
-            } else {
-                eprintln!("failed to parse aprs packet: {} {msg:?}", line);
-                continue;
-            };
-            eprintln!("{msg:?}");
+            extensions::ExtensionRegistry::handle(&line, &mut w).await;
             tcp_ext_store.broadcast(line);
         }
         eprintln!("disconnected from server, reconnecting in 1s");

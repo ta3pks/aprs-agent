@@ -56,6 +56,7 @@ name = "aprs-agent"
 version = "0.1.0"
 dependencies = [
  "aprs-parser",
+ "async-trait",
  "callpass",
  "clap",
  "educe",
@@ -70,8 +71,7 @@ dependencies = [
 [[package]]
 name = "aprs-parser"
 version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "776c458127b73f8c85262470be369c8d0d473f38147df7475170c8a72306358b"
+source = "git+https://github.com/ta3pks/aprs-parser-rs#ee8058828f89aee846aacf1c93abe5200f25a1c3"
 dependencies = [
  "thiserror",
 ]
@@ -81,6 +81,17 @@ name = "ascii"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d92bec98840b8f03a5ff5413de5293bfcd8bf96467cf5452609f939ec6f5de16"
+
+[[package]]
+name = "async-trait"
+version = "0.1.68"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b9ccdd8f2a161be9bd5c023df56f1b2a0bd1d83872ae53b71a84a12c9bf6e842"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.16",
+]
 
 [[package]]
 name = "autocfg"

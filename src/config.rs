@@ -1,6 +1,14 @@
 use serde::{Deserialize, Serialize};
 
-use crate::flags::{flags, Flags};
+use crate::{
+    extensions::{logger, twitter, ExtensionRegistry},
+    flags::{flags, Flags},
+};
+macro_rules! switch {
+    ($($rule:expr => $do:expr);+) => {
+        $(if $rule { $do } )+
+    };
+}
 use educe::Educe;
 
 #[derive(Debug, Serialize, Deserialize, Educe, Clone)]
@@ -20,6 +28,7 @@ pub struct Config {
     #[educe(Default = true)]
     pub print_config_on_startup: bool,
     pub extension_server: ExtensionServerSettings,
+    pub extensions: Extensions,
 }
 #[derive(Debug, Serialize, Deserialize, Educe, Clone)]
 #[educe(Default)]
@@ -31,18 +40,37 @@ pub struct ExtensionServerSettings {
     #[educe(Default = 65080)]
     pub port: u16,
 }
-
-static mut CONFIG: Option<Config> = None;
-
-pub fn parse(flags: &Flags) -> Config {
-    let cpath = &flags.config;
-    let contents = std::fs::read_to_string(cpath).expect("failed to read config file");
-    let config: Config = toml::from_str(&contents).expect("failed to parse config file");
-    unsafe {
-        CONFIG = Some(config.clone());
-    }
-    config
+#[derive(Debug, Serialize, Deserialize, Clone, Default)]
+pub struct Extensions {
+    pub twitter: twitter::Config,
+    pub logger: logger::Config,
 }
+static mut CONFIG: Option<Config> = None;
+impl Config {
+    pub fn get() -> &'static Config {
+        unsafe { CONFIG.as_ref().expect("config not initialized") }
+    }
+    pub fn parse(flags: &Flags) -> Config {
+        if unsafe { CONFIG.is_some() } {
+            panic!("config already initialized");
+        }
+        let cpath = &flags.config;
+        let contents = std::fs::read_to_string(cpath).expect("failed to read config file");
+        let config: Config = toml::from_str(&contents).expect("failed to parse config file");
+        unsafe {
+            CONFIG = Some(config.clone());
+        }
+        config.register_extensions()
+    }
+    fn register_extensions(self) -> Self {
+        switch! {
+            self.extensions.twitter.enabled => todo!("write twitter extension");
+            self.extensions.logger.enabled => ExtensionRegistry::register(logger::Logger)
+        }
+        self
+    }
+}
+
 pub fn write_default_config() {
     let cpath = &flags().config;
     let config = Config::default();
