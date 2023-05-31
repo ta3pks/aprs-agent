@@ -35,10 +35,6 @@ pub async fn start_server(config: crate::Config, tcp_ext_store: ConStore) {
                 //empty line reconnect
                 break;
             };
-            if line.starts_with('#') {
-                eprintln!("{}", line);
-                continue;
-            }
             extensions::ExtensionRegistry::handle(&line, &mut w).await;
             tcp_ext_store.broadcast(line);
         }
