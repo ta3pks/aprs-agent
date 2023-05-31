@@ -3,6 +3,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Educe)]
 #[educe(Default)]
+#[serde(default)]
 pub struct Config {
     #[educe(Default = true)]
     pub enabled: bool,
@@ -13,6 +14,7 @@ pub struct Config {
     ))]
     pub filter_by_message_type: Vec<char>,
     pub exclude_by_message_type: Vec<char>,
+    pub keyword_filter: Vec<String>,
 }
 
 pub struct Logger;
@@ -38,6 +40,16 @@ impl super::Extension for Logger {
                 return None;
             }
         };
+        if !cfg.keyword_filter.is_empty() {
+            if cfg
+                .keyword_filter
+                .iter()
+                .any(|k| line.to_lowercase().contains(&k.to_lowercase()))
+            {
+                self.log(line);
+            }
+            return None;
+        }
         if cfg.filter_by_message_type.is_empty()
             || cfg
                 .filter_by_message_type
