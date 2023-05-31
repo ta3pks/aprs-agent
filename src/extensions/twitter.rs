@@ -9,6 +9,7 @@ pub struct Config {
     pub api_secret: String,
     pub access_token_key: String,
     pub access_token_secret: String,
+    #[educe(Default = true)]
     pub add_hash_tag: bool,
     #[educe(Default(
         expression = r#"vec!["twsend","TWSEND"].into_iter().map(Into::into).collect()"#
