@@ -11,13 +11,13 @@ pub trait Extension {
         false
     }
     fn log(&self, msg: &str) {
-        eprintln!("\x1B[32m{}: {}\x1B[0m", self.name(), msg);
+        eprintln!("\x1B[32m{}:\x1B[0m {}", self.name(), msg);
     }
     fn error(&self, msg: &str) {
-        eprintln!("\x1B[31m{}: {}\x1B[0m", self.name(), msg);
+        eprintln!("\x1B[31m{}:\x1B[0m {}", self.name(), msg);
     }
     fn warn(&self, msg: &str) {
-        eprintln!("\x1B[33m{}: {}\x1B[0m", self.name(), msg);
+        eprintln!("\x1B[33m{}:\x1B[0m {}", self.name(), msg);
     }
 }
 

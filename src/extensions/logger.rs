@@ -29,6 +29,7 @@ impl super::Extension for Logger {
         let cfg = &crate::Config::get().extensions.logger;
         if line.starts_with('#') && cfg.log_comments {
             self.log(line);
+            return None;
         }
         let msg = match aprs_parser::AprsPacket::decode_textual(line.as_bytes()) {
             Ok(msg) => msg,
