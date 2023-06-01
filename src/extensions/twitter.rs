@@ -99,6 +99,10 @@ impl super::Extension for Twitter {
         self.error(&msg_id);
         let msg = String::from_utf8_lossy(&msg.text);
         let _tweet = format!("{msg}\nfrom {ssid}>{to},{path}");
-        Some(format!("{recepient}>{ssid},{path}::{ssid:<9}:ack{msg_id}"))
+        if msg.is_empty() {
+            None
+        } else {
+            Some(format!("{recepient}>{ssid},{path}::{ssid:<9}:ack{msg_id}"))
+        }
     }
 }
