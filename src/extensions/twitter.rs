@@ -75,15 +75,14 @@ impl Twitter {
         } else {
             tweet
         };
-        match egg_mode::tweet::DraftTweet::new(tweet)
+        if let Err(e) = egg_mode::tweet::DraftTweet::new(tweet)
             .send(&egg_mode::Token::Access {
                 consumer: KeyPair::new(api_key, api_secret),
                 access: KeyPair::new(access_token_key, access_token_secret),
             })
             .await
         {
-            Ok(d) => self.log(&format!("tweet resp: {:#?}", d.rate_limit_status)),
-            e => self.error(&format!("tweet error: {:#?}", e)),
+            self.error(&format!("tweet error: {:#?}", e))
         };
     }
 }
@@ -146,8 +145,8 @@ impl super::Extension for Twitter {
         });
         self.error(&msg_id);
         let msg = String::from_utf8_lossy(&msg.text);
-        let _tweet = format!("{msg}\nfrom {ssid}>{to},{path}");
-        self.send_tweet(_tweet).await;
+        self.send_tweet(format!("{msg}\nfrom {ssid}>{to},{path}"))
+            .await;
         if msg.is_empty() {
             None
         } else {
