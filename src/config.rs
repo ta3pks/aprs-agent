@@ -57,8 +57,15 @@ impl Config {
             panic!("config already initialized");
         }
         let cpath = &flags.config;
-        let contents = std::fs::read_to_string(cpath).expect("failed to read config file");
-        let config: Config = toml::from_str(&contents).expect("failed to parse config file");
+        let config = match std::fs::read_to_string(cpath) {
+            Ok(contents) => toml::from_str(&contents).expect("failed to parse config file"),
+            Err(e) => {
+                eprintln!("failed to read config file creating default config: {}", e);
+                let config = Config::default();
+                config.sync_file();
+                config
+            }
+        };
         unsafe {
             CONFIG = Some(config.clone());
         }
