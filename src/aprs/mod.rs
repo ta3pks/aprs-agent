@@ -10,8 +10,6 @@ use crate::{extension_server::ConStore, extensions};
 
 pub async fn start_server(config: crate::Config, tcp_ext_store: ConStore) {
     loop {
-        let (tx, mut rx) = tokio::sync::mpsc::channel::<Vec<u8>>(1);
-        extensions::ExtensionRegistry::set_own_writers(tx);
         let mut con = TcpStream::connect(format!("{}:{}", config.server, config.port))
             .await
             .expect("failed to connect to aprs server");
@@ -30,6 +28,8 @@ pub async fn start_server(config: crate::Config, tcp_ext_store: ConStore) {
         let (r, mut w) = con.split();
         let reader = tokio::io::BufReader::new(r);
         let mut lines = reader.lines();
+        let (tx, mut rx) = tokio::sync::mpsc::channel::<Vec<u8>>(1);
+        extensions::ExtensionRegistry::set_own_writers(tx);
         loop {
             tokio::select! {
                 line = lines.next_line() => {
@@ -43,7 +43,14 @@ pub async fn start_server(config: crate::Config, tcp_ext_store: ConStore) {
                 tcp_ext_store.broadcast(line);
                 }
                 line = rx.recv() => {
-                    if let Some(line) = line {
+                    if let Some(mut line) = line {
+                        if line.is_empty(){
+                            continue;
+                        }
+                        if line.last() != Some(&b'\n'){
+                            line.push(b'\n');
+                        }
+                        eprintln!("--> {}", String::from_utf8_lossy(&line));
                         if let Err(e) = w.write_all(&line).await {
                             eprintln!("failed to write to aprs server: {}", e);
                             break

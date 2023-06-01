@@ -11,6 +11,9 @@ pub struct Flags {
     /// Print the config and exit
     #[arg(short, long)]
     pub print_config: bool,
+    /// Write missing default values to the config file and exit
+    #[arg(short, long)]
+    pub sync_config_to_file: bool,
 }
 
 static mut FLAGS: Option<Flags> = None;

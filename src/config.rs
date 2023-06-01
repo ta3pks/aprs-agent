@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    extensions::{logger, twitter, ExtensionRegistry},
+    extensions::{fixed_beacon, logger, twitter, ExtensionRegistry},
     flags::{flags, Flags},
 };
 macro_rules! switch {
@@ -41,9 +41,11 @@ pub struct ExtensionServerSettings {
     pub port: u16,
 }
 #[derive(Debug, Serialize, Deserialize, Clone, Default)]
+#[serde(default)]
 pub struct Extensions {
     pub twitter: twitter::Config,
     pub logger: logger::Config,
+    pub fixed_beacon: fixed_beacon::Config,
 }
 static mut CONFIG: Option<Config> = None;
 impl Config {
@@ -65,9 +67,15 @@ impl Config {
     fn register_extensions(self) -> Self {
         switch! {
             self.extensions.twitter.enabled => ExtensionRegistry::register(twitter::Twitter::new(&self.extensions.twitter));
-            self.extensions.logger.enabled => ExtensionRegistry::register(logger::Logger)
+            self.extensions.logger.enabled => ExtensionRegistry::register(logger::Logger);
+            self.extensions.fixed_beacon.enabled => ExtensionRegistry::register(fixed_beacon::FixedBeacon::new(&self.extensions.fixed_beacon))
         }
         self
+    }
+    pub fn sync_file(&self) {
+        let cpath = &flags().config;
+        let contents = toml::to_string_pretty(self).expect("failed to serialize config");
+        std::fs::write(cpath, contents).expect("failed to write config file");
     }
 }
 

@@ -21,6 +21,10 @@ async fn main() {
         eprintln!("{:#?}", config);
         return;
     }
+    if flags.sync_config_to_file {
+        config.sync_file();
+        return;
+    }
     if config.print_config_on_startup {
         eprintln!("{:#?}", config);
     }
