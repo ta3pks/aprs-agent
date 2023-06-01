@@ -131,8 +131,6 @@ impl super::Extension for Twitter {
             .as_slice()
             .pipe(String::from_utf8_lossy)
             .to_string();
-        dbg!(&line);
-        dbg!(&path, &to, &ssid, &recepient);
         if !cfg.allowed_recepients.contains(&recepient) {
             return None;
         }
@@ -143,7 +141,6 @@ impl super::Extension for Twitter {
                 String::from_utf8_lossy(&id).to_string()
             }
         });
-        self.error(&msg_id);
         let msg = String::from_utf8_lossy(&msg.text);
         self.send_tweet(format!("{msg}\nfrom {ssid}>{to},{path}"))
             .await;
