@@ -5,8 +5,11 @@ use std::{
 
 use aprs_parser::AprsData;
 use educe::Educe;
+use egg_mode::KeyPair;
 use serde::{Deserialize, Serialize};
 use tap::Pipe;
+
+use super::Extension;
 fn fmt_pass(v: &String, f: &mut Formatter) -> fmt::Result {
     let fst = v.chars().take(3).collect::<String>();
     let lst = if v.len() > 3 {
@@ -55,6 +58,33 @@ impl Twitter {
             panic!("Twitter extension enabled but no allowed recepients or senders specified");
         }
         Self(PhantomData)
+    }
+    async fn send_tweet(&self, tweet: String) {
+        let Config {
+            api_key,
+            api_secret,
+            access_token_key,
+            access_token_secret,
+            add_hash_tag,
+            enabled: _,
+            allowed_recepients: _,
+            allowed_senders: _,
+        } = &crate::Config::get().extensions.twitter;
+        let tweet = if *add_hash_tag {
+            format!("{} #APRS", tweet)
+        } else {
+            tweet
+        };
+        match egg_mode::tweet::DraftTweet::new(tweet)
+            .send(&egg_mode::Token::Access {
+                consumer: KeyPair::new(api_key, api_secret),
+                access: KeyPair::new(access_token_key, access_token_secret),
+            })
+            .await
+        {
+            Ok(d) => self.log(&format!("tweet resp: {:#?}", d.rate_limit_status)),
+            e => self.error(&format!("tweet error: {:#?}", e)),
+        };
     }
 }
 
@@ -116,6 +146,7 @@ impl super::Extension for Twitter {
         self.error(&msg_id);
         let msg = String::from_utf8_lossy(&msg.text);
         let _tweet = format!("{msg}\nfrom {ssid}>{to},{path}");
+        self.send_tweet(_tweet).await;
         if msg.is_empty() {
             None
         } else {
@@ -123,5 +154,3 @@ impl super::Extension for Twitter {
         }
     }
 }
-
-async fn send_tweet(tweet: String) {}
