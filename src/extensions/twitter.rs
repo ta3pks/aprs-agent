@@ -1,4 +1,7 @@
-use std::fmt::{self, Formatter};
+use std::{
+    fmt::{self, Formatter},
+    marker::PhantomData,
+};
 
 use aprs_parser::AprsData;
 use educe::Educe;
@@ -35,7 +38,25 @@ pub struct Config {
     #[educe(Default(expression = r#"vec!["TA3PKS"].into_iter().map(Into::into).collect()"#))]
     pub allowed_senders: Vec<String>,
 }
-pub struct Twitter;
+pub struct Twitter(PhantomData<()>);
+impl Twitter {
+    pub fn new(cfg: &Config) -> Self {
+        if !cfg.enabled {
+            panic!("Twitter extension enabled is false trying to register it");
+        }
+        if cfg.api_key.is_empty()
+            || cfg.api_secret.is_empty()
+            || cfg.access_token_key.is_empty()
+            || cfg.access_token_secret.is_empty()
+        {
+            panic!("Twitter extension enabled but no api key or secret specified");
+        }
+        if cfg.allowed_recepients.is_empty() || cfg.allowed_senders.is_empty() {
+            panic!("Twitter extension enabled but no allowed recepients or senders specified");
+        }
+        Self(PhantomData)
+    }
+}
 
 #[async_trait::async_trait]
 impl super::Extension for Twitter {
@@ -51,10 +72,6 @@ impl super::Extension for Twitter {
         if package.data.data_type_identifier() != b':' {
             return None;
         }
-        if cfg.allowed_recepients.is_empty() || cfg.allowed_senders.is_empty() {
-            panic!("Twitter extension enabled but no allowed recepients or senders specified");
-        }
-
         let ssid = &package.from;
         let sender_callsign = ssid.call().to_string();
         if !cfg
@@ -106,3 +123,5 @@ impl super::Extension for Twitter {
         }
     }
 }
+
+async fn send_tweet(tweet: String) {}

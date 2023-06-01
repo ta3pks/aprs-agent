@@ -64,7 +64,7 @@ impl Config {
     }
     fn register_extensions(self) -> Self {
         switch! {
-            self.extensions.twitter.enabled => ExtensionRegistry::register(twitter::Twitter);
+            self.extensions.twitter.enabled => ExtensionRegistry::register(twitter::Twitter::new(&self.extensions.twitter));
             self.extensions.logger.enabled => ExtensionRegistry::register(logger::Logger)
         }
         self
