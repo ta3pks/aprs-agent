@@ -104,6 +104,7 @@ impl super::Extension for Twitter {
         }
         let ssid = &package.from;
         let sender_callsign = ssid.call().to_string();
+        let ssid = ssid.to_string();
         if !cfg
             .allowed_senders
             .iter()
@@ -150,7 +151,7 @@ impl super::Extension for Twitter {
         if msg.is_empty() {
             None
         } else {
-            Some(format!("{recepient}>{ssid},{path}::{ssid:<9}:ack{msg_id}"))
+            Some(format!("{recepient}>{ssid},{path}::{ssid: <9}:ack{msg_id}",))
         }
     }
 }
