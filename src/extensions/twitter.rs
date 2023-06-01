@@ -92,7 +92,7 @@ impl super::Extension for Twitter {
     fn name(&self) -> &'static str {
         "twitter"
     }
-    async fn handle(&self, line: &str) -> Option<String> {
+    async fn handle(&self, line: &str) -> Option<Vec<u8>> {
         let cfg = &crate::Config::get().extensions.twitter;
         if !cfg.enabled {
             return None;
@@ -150,7 +150,7 @@ impl super::Extension for Twitter {
         if msg.is_empty() {
             None
         } else {
-            Some(format!("{recepient}>{ssid},{path}::{ssid: <9}:ack{msg_id}",))
+            Some(format!("{recepient}>{ssid},{path}::{ssid: <9}:ack{msg_id}\n",).into_bytes())
         }
     }
 }

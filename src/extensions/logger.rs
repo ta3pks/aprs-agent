@@ -27,7 +27,7 @@ impl super::Extension for Logger {
     fn is_spawnable(&self) -> bool {
         true
     }
-    async fn handle(&self, line: &str) -> Option<String> {
+    async fn handle(&self, line: &str) -> Option<Vec<u8>> {
         let cfg = &crate::Config::get().extensions.logger;
         if line.starts_with('#') && cfg.log_comments {
             self.log(line);
