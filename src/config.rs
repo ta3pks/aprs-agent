@@ -25,7 +25,6 @@ pub struct Config {
         expression = r#"vec!["ta*","tb*","tc*","ym*"].iter().map(ToString::to_string).collect()"#
     ))]
     pub allowed_callsigns: Vec<String>,
-    #[educe(Default = true)]
     pub print_config_on_startup: bool,
     pub extension_server: ExtensionServerSettings,
     pub extensions: Extensions,
