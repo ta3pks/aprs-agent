@@ -14,6 +14,7 @@ educe = { version = "0.4.22", default-features = false, features = ["default", "
 parking_lot = "0.12.1"
 serde = { version = "1.0.163", features = ["derive"] }
 strum = { version = "0.24.1", features = ["derive"] }
+tap = "1.0.1"
 thiserror = "1.0.40"
 tokio = { version = "1.28.1", features = ["full"] }
 toml = "0.7.4"

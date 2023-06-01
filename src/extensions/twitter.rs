@@ -3,6 +3,7 @@ use std::fmt::{self, Formatter};
 use aprs_parser::AprsData;
 use educe::Educe;
 use serde::{Deserialize, Serialize};
+use tap::Pipe;
 fn fmt_pass(v: &String, f: &mut Formatter) -> fmt::Result {
     let fst = v.chars().take(3).collect::<String>();
     let lst = if v.len() > 3 {
@@ -31,6 +32,8 @@ pub struct Config {
         expression = r#"vec!["twsend","TWSEND"].into_iter().map(Into::into).collect()"#
     ))]
     pub allowed_recepients: Vec<String>,
+    #[educe(Default(expression = r#"vec!["TA3PKS"].into_iter().map(Into::into).collect()"#))]
+    pub allowed_senders: Vec<String>,
 }
 pub struct Twitter;
 
@@ -48,17 +51,19 @@ impl super::Extension for Twitter {
         if package.data.data_type_identifier() != b':' {
             return None;
         }
-        if cfg.allowed_recepients.is_empty() {
-            panic!("Twitter extension enabled but no allowed recepients specified");
+        if cfg.allowed_recepients.is_empty() || cfg.allowed_senders.is_empty() {
+            panic!("Twitter extension enabled but no allowed recepients or senders specified");
         }
+
+        let ssid = &package.from;
+        let sender_callsign = ssid.call().to_string();
         if !cfg
-            .allowed_recepients
-            .contains(&package.to().map(ToString::to_string).unwrap_or_default())
+            .allowed_senders
+            .iter()
+            .any(|x| x.to_uppercase() == sender_callsign.to_uppercase())
         {
             return None;
         }
-        self.log(&format!("Sending tweet: {}", line));
-        let ssid = package.from.to_string();
         let path = package
             .via
             .iter()
@@ -68,15 +73,32 @@ impl super::Extension for Twitter {
             })
             .collect::<Vec<_>>()
             .join(",");
-        let recepient = package.to().map(ToString::to_string).unwrap_or_default();
+        let to = package.to().map(ToString::to_string).unwrap_or_default();
         let msg = if let AprsData::Message(m) = package.data {
             m
         } else {
             return None;
         };
+        let recepient = msg
+            .addressee
+            .as_slice()
+            .pipe(String::from_utf8_lossy)
+            .to_string();
+        dbg!(&line);
+        dbg!(&path, &to, &ssid, &recepient);
+        if !cfg.allowed_recepients.contains(&recepient) {
+            return None;
+        }
+        let msg_id = msg.id.unwrap_or_default().pipe(|id| {
+            if id.is_empty() {
+                String::new()
+            } else {
+                String::from_utf8_lossy(&id).to_string()
+            }
+        });
+        self.error(&msg_id);
         let msg = String::from_utf8_lossy(&msg.text);
-        let tweet = format!("{msg}\nfrom {ssid}>{path}");
-        self.warn(&format!("Sending tweet: {tweet} {recepient}"));
-        None
+        let _tweet = format!("{msg}\nfrom {ssid}>{to},{path}");
+        Some(format!("{recepient}>{ssid},{path}::{ssid:<9}:ack{msg_id}"))
     }
 }

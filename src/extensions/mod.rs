@@ -44,6 +44,11 @@ impl ExtensionRegistry {
                             ext.handle(&line).await;
                         });
                     } else if let Some(res) = ext.handle(line).await {
+                        eprintln!(
+                            "extension {} writing to aprs server:\n{}\n-----",
+                            ext.name(),
+                            res
+                        );
                         if let Err(e) = w.write_all(format!("{}\n", res).as_bytes()).await {
                             eprintln!("failed to write to aprs server: {}", e);
                         };
