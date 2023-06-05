@@ -76,7 +76,6 @@ impl FixedBeacon {
                 return Ok(());
             }
         };
-        //TA3PKS-7>APAT81-15,WIDE1-1,WIDE2-2,qAR,TA3ML-1:!3800.00N/02700.00E>/A=000000ta3pks@mugsoft.io +905418622094 433.500 QRV
         let cfg = &crate::Config::get().extensions.fixed_beacon;
         let package = format!(
             "{ssid}>AP4GNT,TCPIP*,qAC,APRSAGENT:!{lat}{symbol_table}{lon}{symbol}{comment}\n",
