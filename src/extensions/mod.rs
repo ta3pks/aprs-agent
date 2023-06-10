@@ -2,6 +2,7 @@ use async_trait::async_trait;
 use tokio::io::{AsyncWrite, AsyncWriteExt};
 pub mod fixed_beacon;
 pub mod logger;
+pub mod smtp;
 pub mod twitter;
 
 #[async_trait]
