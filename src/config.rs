@@ -1,9 +1,10 @@
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    extensions::{fixed_beacon, logger, twitter, ExtensionRegistry},
+    extensions::{fixed_beacon, logger, smtp, twitter, ExtensionRegistry},
     flags::{flags, Flags},
 };
+#[macro_export]
 macro_rules! switch {
     ($($rule:expr => $do:expr);+) => {
         $(if $rule { $do } )+
@@ -45,6 +46,7 @@ pub struct Extensions {
     pub twitter: twitter::Config,
     pub logger: logger::Config,
     pub fixed_beacon: fixed_beacon::Config,
+    pub smtp: smtp::Config,
 }
 static mut CONFIG: Option<Config> = None;
 impl Config {
@@ -74,6 +76,7 @@ impl Config {
         switch! {
             self.extensions.twitter.enabled => ExtensionRegistry::register(twitter::Twitter::new(&self.extensions.twitter));
             self.extensions.logger.enabled => ExtensionRegistry::register(logger::Logger);
+            self.extensions.smtp.enabled => ExtensionRegistry::register(smtp::SmtpEmailer::new(&self.extensions.smtp));
             self.extensions.fixed_beacon.enabled => ExtensionRegistry::register(fixed_beacon::FixedBeacon::new(&self.extensions.fixed_beacon))
         }
         self

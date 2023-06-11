@@ -12,6 +12,7 @@ callpass = { version = "1.0.5", default-features = false }
 clap = { version = "4.3.0", features = ["derive"] }
 educe = { version = "0.4.22", default-features = false, features = ["default", "Default"] }
 egg-mode = "0.16.1"
+lettre = "0.10.4"
 parking_lot = "0.12.1"
 serde = { version = "1.0.163", features = ["derive"] }
 strum = { version = "0.24.1", features = ["derive"] }

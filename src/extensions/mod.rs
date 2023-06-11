@@ -34,6 +34,7 @@ pub struct ExtensionRegistry;
 impl ExtensionRegistry {
     pub fn register(ext: impl Extension + 'static + Send + Sync) {
         unsafe {
+            ext.log("extension is being activated");
             if let Some(ref mut exts) = EXTENSIONS {
                 exts.push(Box::new(ext));
             } else {
