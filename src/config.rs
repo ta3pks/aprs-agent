@@ -70,16 +70,15 @@ impl Config {
         unsafe {
             CONFIG = Some(config.clone());
         }
-        config.register_extensions()
+        config
     }
-    fn register_extensions(self) -> Self {
+    pub fn register_extensions(&self) {
         switch! {
             self.extensions.twitter.enabled => ExtensionRegistry::register(twitter::Twitter::new(&self.extensions.twitter));
             self.extensions.logger.enabled => ExtensionRegistry::register(logger::Logger);
             self.extensions.smtp.enabled => ExtensionRegistry::register(smtp::SmtpEmailer::new(&self.extensions.smtp));
             self.extensions.fixed_beacon.enabled => ExtensionRegistry::register(fixed_beacon::FixedBeacon::new(&self.extensions.fixed_beacon))
         }
-        self
     }
     pub fn sync_file(&self) {
         let cpath = &flags().config;

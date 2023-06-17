@@ -33,5 +33,6 @@ async fn main() {
     } else {
         Default::default()
     };
+    config.register_extensions();
     aprs::start_server(config, ext_con_store).await;
 }
