@@ -5,7 +5,6 @@ use std::{
 
 use aprs_parser::AprsData;
 use educe::Educe;
-use egg_mode::KeyPair;
 use serde::{Deserialize, Serialize};
 use tap::Pipe;
 
@@ -75,15 +74,20 @@ impl Twitter {
         } else {
             tweet
         };
-        if let Err(e) = egg_mode::tweet::DraftTweet::new(tweet)
-            .send(&egg_mode::Token::Access {
-                consumer: KeyPair::new(api_key, api_secret),
-                access: KeyPair::new(access_token_key, access_token_secret),
-            })
+        let token = twitter_v2::authorization::Oauth1aToken::new(
+            api_key,
+            api_secret,
+            access_token_key,
+            access_token_secret,
+        );
+        if let Err(e) = twitter_v2::TwitterApi::new(token)
+            .post_tweet()
+            .text(tweet)
+            .send()
             .await
         {
             self.error(&format!("tweet error: {:#?}", e))
-        };
+        }
     }
 }
 
